@@ -110,10 +110,12 @@
             tramo__horario.setAttribute('value', valor);
             //tramo__horario.classList.add('list-group-item-action');
             let horario = document.createElement("div");
-            horario.classList.add('col');
+            horario.classList.add('col-12');
+            horario.classList.add('col-xl-4');
             horario.textContent = getHorario(hora);
             let contador = document.createElement("div");
             contador.classList.add('col');
+            contador.classList.add('col-xl-4');
             contador.classList.add('col__contador');
             //contador.setAttribute('value',valor);
             //contador.textContent = motociclistas;
