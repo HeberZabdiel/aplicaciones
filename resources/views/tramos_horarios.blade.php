@@ -15,6 +15,15 @@
 
 <body>
     <div class="container">
+        <div class="row border border-primary rounded mt-5 mb-2 p-2 text-justify" id="descripcion__ejercicio">
+            <h2 class="titulo">Descripcion__ejercicio</h2>
+        Construccion de una lista con tramos horarios, en intervalos de 30 min. Empieza a las 8 am y termina a las 8pm (o sea un cuadro con un bloque que empiece a las 8, luego 8.30, 9, 9 30.. así hasta las 8pm)
+        La empresa tiene una disponibilidad de 8 motociclistas cada 30 min.
+        Cuando alguien haga click sobre una de estas cajitas debería tomar un recurso de motociclista
+        (O sea un contador que empiece en 8 y luego baje a 7, a demás de marcar la caja en rojo cuando se ocupe)
+        Si el mismo usuario da click en la misma caja, debe liberar el recurso, si se encontraba en rojo, debe liberar el recurso, o sea el contador nuevamente pasa de 7 a 8
+        Si otros usuarios han tomado a todos los motociclistas, la caja debe aparecer en color amarillo y no me debe dejar tomar ese horario
+        </div>
         <div class="row">
             <div class="col-7 list-group" id="tramosHorarios">
                 <div class="input-group border border-secondary m-1 p-1 rounded" id="cabecera">
@@ -24,7 +33,7 @@
                 </div>
             </div>
             <div class="col-5 border p-2 my-1" id="clientes">
-                <h3 class="row titulo">Clientes</h3>
+                <h3 class="col-12 titulo">Clientes</h3>
                 <div class="btn-group-vertical p-1 px-2" id="clientes__container">
                 </div>
             </div>
@@ -32,7 +41,7 @@
     </div>
     <script>
         let motociclistas = 8;
-        let usuarios = ['Maria', 'Pedro', 'Luis','Carlos','Josefina','Laura','Israel','Joel'];
+        let usuarios = ['Maria', 'Pedro', 'Luis', 'Carlos', 'Josefina', 'Laura', 'Israel', 'Joel','Extra'];
         let arrayTramos = [];
         let ocupacionesPorUsuario = [];
         let usuarioActual = 0;
@@ -166,7 +175,10 @@
                 btn.addEventListener('click', () => {
                     let estado = btn.querySelectorAll('.col__estado');
                     let contador = btn.querySelectorAll('.col__contador');
-
+                    let numeroMotos = 0;
+                    contador.forEach(etiqueta => {
+                        numeroMotos = parseInt(etiqueta.textContent);
+                    })
                     if (btn.classList.contains('btn-outline-success')) {
                         //console.log('contienes success');
                         btn.classList.remove('btn-outline-success');
@@ -182,6 +194,7 @@
                             let numero = parseInt(etiqueta.textContent);
 
                             etiqueta.textContent = --numero;
+
                             console.log('btnValor', btn.getAttribute('value'));
 
                             //arrayTramos[btn.getAttribute('value')].motos = numero;
@@ -190,15 +203,18 @@
                             console.log('contador', etiqueta.textContent)
                         });
 
-                    } else {
+                    } else if (btn.classList.contains('btn-outline-danger')){
                         btn.classList.add('btn-outline-success');
                         btn.classList.remove('btn-outline-danger');
                         estado.forEach(etiqueta => {
                             etiqueta.textContent = 'Disponible';
                             //arrayTramos[btn.getAttribute('value')].estado = 'Disponible';
-                            let desocupar = ocupacionesPorUsuario.find(ocupacion => ocupacion.idTramo == btn.getAttribute('value'));
-                            let indice = ocupacionesPorUsuario.indexOf(desocupar);
-                            ocupacionesPorUsuario.splice(1, indice);
+                            let desocupar0 = ocupacionesPorUsuario.filter(ocupacion => ocupacion.idTramo == btn.getAttribute('value'));
+                            let desocupar1 = desocupar0.find(ocupacion => ocupacion.idUsuario == usuarioActual);
+                            let indice = ocupacionesPorUsuario.indexOf(desocupar1);
+                            console.log('desocupado', desocupar1);
+                            console.log('indice', indice);
+                            ocupacionesPorUsuario.splice(indice, 1);
                             console.log('ocupacionesPorUsuario', ocupacionesPorUsuario);
                         });
                         contador.forEach(etiqueta => {
@@ -224,7 +240,7 @@
                 } else {
                     cliente.classList.add('btn-primary');
                 }
-                
+
                 cliente.classList.add('m-1');
                 cliente.classList.add('cliente');
                 cliente.textContent = clientes[i];
@@ -235,19 +251,20 @@
         }
 
         function actualizarOcupacionesUsuario(idCliente) {
+            let botones = document.querySelectorAll('.btn__tramo__horario');
+
             ocupacionesPorUsuario.forEach(ocupacion => {
-                let botones = document.querySelectorAll('.btn__tramo__horario');
                 botones.forEach(btn => {
-                    if(ocupacion.idTramo == btn.getAttribute('value'))
-                    {
+                    if (ocupacion.idTramo == btn.getAttribute('value')) {
                         let contador = btn.querySelectorAll('.col__contador');
+                        let numero = 0;
                         contador.forEach(etiqueta => {
-                            let numero = parseInt(etiqueta.textContent);
+                            numero = parseInt(etiqueta.textContent);
                             etiqueta.textContent = --numero;
                         });
                     }
                 })
-                
+
                 if (ocupacion.idUsuario == idCliente) {
                     //console.log('ocupa un lugar');
                     //return;
@@ -264,20 +281,36 @@
                     })
                 }
             })
+            botones.forEach(btn => {
+                let contador = btn.querySelectorAll('.col__contador');
+                let numero = 0;
+                contador.forEach(etiqueta => {
+                    numero = parseInt(etiqueta.textContent);
+                });
+                if (numero == 0 && btn.classList.contains('btn-outline-success')) {
+                    btn.classList.remove('btn-outline-success');
+                    //btn.classList.remove('btn-outline-danger');
+                    btn.classList.add('btn-outline-warning');
+                    let estado = btn.querySelectorAll('.col__estado');
+                    estado.forEach(etiqueta => {
+                        etiqueta.textContent = 'Sin servicio';
+                    })
+                }
+            })
         }
 
         function funcionesBotonesClientes() {
             let clientes = document.querySelectorAll('.cliente');
             clientes.forEach(cliente => {
                 cliente.addEventListener('click', () => {
-                    clientes.forEach(cliente_aux=>{
+                    clientes.forEach(cliente_aux => {
                         cliente_aux.classList.remove('btn-success')
                         cliente_aux.classList.add('btn-primary')
                     })
                     cliente.classList.remove('btn-primary')
                     cliente.classList.add('btn-success')
-                    usuarioActual = cliente.getAttribute('value');
-                    console.log('idUsaurioActual', usuarioActual);
+                    usuarioActual = parseInt(cliente.getAttribute('value'));
+                    console.log('idUsuarioActual', usuarioActual);
                     generarTramosHorarios(arrayTramos);
                     actualizarOcupacionesUsuario(usuarioActual);
                     funcionesBotones();
@@ -286,8 +319,6 @@
             })
         }
         arregloInicial();
-        //arrayTramos[0]['motos'] = 4;
-        //arrayTramos.indexOf(1).motos = 4;
         generarTramosHorarios(arrayTramos);
         funcionesBotones();
         agregarClientes(usuarios);
